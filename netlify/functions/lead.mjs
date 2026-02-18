@@ -35,14 +35,18 @@ export const handler = async (event) => {
     return json(405, { message: 'Method not allowed.' });
   }
 
-  const resendApiKey = process.env.RESEND_API_KEY;
+  const smtpHost = process.env.SMTP_HOST;
+  const smtpPort = Number(process.env.SMTP_PORT || '587');
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  const smtpSecure = String(process.env.SMTP_SECURE || '').toLowerCase() === 'true';
   const fromEmail = process.env.LEAD_FROM_EMAIL;
   const toEmail = process.env.LEAD_TO_EMAIL || 'andreas.stoeckl@506.ai';
 
-  if (!resendApiKey || !fromEmail) {
+  if (!smtpHost || !smtpUser || !smtpPass || !fromEmail) {
     return json(500, {
       message:
-        'Server email configuration missing. Set RESEND_API_KEY and LEAD_FROM_EMAIL.',
+        'Server email configuration missing. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS and LEAD_FROM_EMAIL.',
     });
   }
 
@@ -98,27 +102,30 @@ export const handler = async (event) => {
     `Zeitpunkt (UTC): ${new Date().toISOString()}`,
   ].join('\n');
 
-  const sendResponse = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${resendApiKey}`,
-      'Content-Type': 'application/json',
+  const transporter = nodemailer.createTransport({
+    host: smtpHost,
+    port: smtpPort,
+    secure: smtpSecure || smtpPort === 465,
+    auth: {
+      user: smtpUser,
+      pass: smtpPass,
     },
-    body: JSON.stringify({
-      from: fromEmail,
-      to: [toEmail],
-      reply_to: businessEmail,
-      subject,
-      text,
-    }),
   });
 
-  if (!sendResponse.ok) {
-    const errText = await sendResponse.text();
+  try {
+    await transporter.sendMail({
+      from: fromEmail,
+      to: toEmail,
+      replyTo: businessEmail,
+      subject,
+      text,
+    });
+  } catch (error) {
     return json(502, {
-      message: `Email provider error: ${errText.slice(0, 300)}`,
+      message: `Email provider error: ${String(error?.message || 'unknown error').slice(0, 300)}`,
     });
   }
 
   return json(200, { ok: true });
 };
+import nodemailer from 'nodemailer';
