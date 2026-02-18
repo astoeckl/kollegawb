@@ -3,12 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kollega – Ihr KI-Kollege, der nie schläft</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap"
-      rel="stylesheet"
-    />
+    <title>Kollega Form Stub</title>
   </head>
   <body>
     <form
@@ -18,18 +13,16 @@
       netlify
       data-netlify="true"
       netlify-honeypot="bot-field"
-      hidden
     >
       <input type="hidden" name="form-name" value="kollega-anfrage" />
-      <input name="bot-field" />
+      <input type="hidden" name="bot-field" />
       <select name="interesse">
-        <option value="Sachbearbeitung">Sachbearbeitung</option>
+        <option value="Sachbearbeitung">Kollega Sachbearbeitung</option>
       </select>
       <input type="email" name="business_email" />
       <input type="tel" name="business_mobile" />
       <input type="text" name="unternehmen" />
+      <button type="submit">Submit</button>
     </form>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
