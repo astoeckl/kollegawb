@@ -11,6 +11,23 @@
     />
   </head>
   <body>
+    <form
+      name="kollega-anfrage"
+      method="POST"
+      action="/"
+      data-netlify="true"
+      netlify-honeypot="bot-field"
+      hidden
+    >
+      <input type="hidden" name="form-name" value="kollega-anfrage" />
+      <input name="bot-field" />
+      <select name="interesse">
+        <option value="Sachbearbeitung">Sachbearbeitung</option>
+      </select>
+      <input type="email" name="business_email" />
+      <input type="tel" name="business_mobile" />
+      <input type="text" name="unternehmen" />
+    </form>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
