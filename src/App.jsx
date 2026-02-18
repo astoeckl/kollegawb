@@ -142,60 +142,25 @@ function App() {
       if (submitButton) submitButton.disabled = true;
 
       const formData = new FormData(form);
-      const body = new URLSearchParams(formData).toString();
-      const buildMailtoHref = () => {
-        const interesse = String(formData.get('interesse') ?? '').trim();
-        const businessEmail = String(formData.get('business_email') ?? '').trim();
-        const businessMobile = String(formData.get('business_mobile') ?? '').trim();
-        const unternehmen = String(formData.get('unternehmen') ?? '').trim();
-        const subject = interesse
-          ? `Kollega Demo Anfrage - ${interesse}`
-          : 'Kollega Demo Anfrage';
-        const bodyLines =
-          language === 'en'
-            ? [
-                'Hello 506.ai team,',
-                '',
-                'I am interested in a Kollega demo.',
-                `Role: ${interesse || '-'}`,
-                `Business email: ${businessEmail || '-'}`,
-                `Business mobile: ${businessMobile || '-'}`,
-                `Company: ${unternehmen || '-'}`,
-              ]
-            : [
-                'Hallo 506.ai Team,',
-                '',
-                'ich interessiere mich fuer eine Kollega-Demo.',
-                `Gewuenschter Kollega: ${interesse || '-'}`,
-                `Business-E-Mail: ${businessEmail || '-'}`,
-                `Business-Mobilnummer: ${businessMobile || '-'}`,
-                `Unternehmen: ${unternehmen || '-'}`,
-              ];
-        return `mailto:andreas.stoeckl@506.ai?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`;
+      const payload = {
+        interesse: String(formData.get('interesse') ?? '').trim(),
+        business_email: String(formData.get('business_email') ?? '').trim(),
+        business_mobile: String(formData.get('business_mobile') ?? '').trim(),
+        unternehmen: String(formData.get('unternehmen') ?? '').trim(),
+        language,
       };
 
-      fetch('/', {
+      fetch('/.netlify/functions/lead', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
         },
-        body,
+        body: JSON.stringify(payload),
       })
-        .then((response) => {
-          if (!response.ok && response.status === 404) {
-            window.location.href = buildMailtoHref();
-            if (leadStatus) {
-              leadStatus.className = 'lead-status success';
-              leadStatus.textContent =
-                language === 'en'
-                  ? 'Netlify form endpoint is unavailable. Your email app has been opened with a prefilled request.'
-                  : 'Netlify-Formular-Endpunkt ist nicht verfuegbar. Ihr E-Mail-Programm wurde mit einer vorbefuellten Anfrage geoeffnet.';
-            }
-            return;
-          }
-
+        .then(async (response) => {
+          const result = await response.json().catch(() => ({}));
           if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            throw new Error(result.message || `HTTP ${response.status}`);
           }
 
           form.reset();
@@ -207,13 +172,14 @@ function App() {
                 : 'Danke, Ihre Demo-Anfrage wurde gesendet.';
           }
         })
-        .catch(() => {
+        .catch((error) => {
           if (leadStatus) {
             leadStatus.className = 'lead-status error';
             leadStatus.textContent =
-              language === 'en'
-                ? 'Submission failed. Please try again or email andreas.stoeckl@506.ai.'
-                : 'Senden fehlgeschlagen. Bitte erneut versuchen oder an andreas.stoeckl@506.ai schreiben.';
+              error?.message ||
+              (language === 'en'
+                ? 'Submission failed. Please try again.'
+                : 'Senden fehlgeschlagen. Bitte erneut versuchen.');
           }
         })
         .finally(() => {
