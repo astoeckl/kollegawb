@@ -35,18 +35,23 @@ export const handler = async (event) => {
     return json(405, { message: 'Method not allowed.' });
   }
 
-  const smtpHost = process.env.SMTP_HOST;
+  const smtpHost = process.env.SMTP_HOST || process.env.SMTP_SERVER;
   const smtpPort = Number(process.env.SMTP_PORT || '587');
-  const smtpUser = process.env.SMTP_USER;
-  const smtpPass = process.env.SMTP_PASS;
+  const smtpUser = process.env.SMTP_USER || process.env.SMTP_USERNAME;
+  const smtpPass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD;
   const smtpSecure = String(process.env.SMTP_SECURE || '').toLowerCase() === 'true';
-  const fromEmail = process.env.LEAD_FROM_EMAIL;
+  const fromEmail = process.env.LEAD_FROM_EMAIL || process.env.SMTP_FROM_EMAIL;
+  const fromName =
+    process.env.LEAD_FROM_NAME ||
+    process.env.SMTP_FROM_NAME ||
+    process.env.EMAIL_FROM_NAME;
+  const defaultReplyTo = process.env.EMAIL_REPLY_TO;
   const toEmail = process.env.LEAD_TO_EMAIL || 'andreas.stoeckl@506.ai';
 
   if (!smtpHost || !smtpUser || !smtpPass || !fromEmail) {
     return json(500, {
       message:
-        'Server email configuration missing. Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS and LEAD_FROM_EMAIL.',
+        'Server email configuration missing. Set SMTP_SERVER/SMTP_HOST, SMTP_PORT, SMTP_USERNAME/SMTP_USER, SMTP_PASSWORD/SMTP_PASS and SMTP_FROM_EMAIL/LEAD_FROM_EMAIL.',
     });
   }
 
@@ -102,6 +107,9 @@ export const handler = async (event) => {
     `Zeitpunkt (UTC): ${new Date().toISOString()}`,
   ].join('\n');
 
+  const fromHeader = fromName ? `${fromName} <${fromEmail}>` : fromEmail;
+  const replyTo = [businessEmail, defaultReplyTo].filter(Boolean).join(', ');
+
   const transporter = nodemailer.createTransport({
     host: smtpHost,
     port: smtpPort,
@@ -114,9 +122,9 @@ export const handler = async (event) => {
 
   try {
     await transporter.sendMail({
-      from: fromEmail,
+      from: fromHeader,
       to: toEmail,
-      replyTo: businessEmail,
+      replyTo,
       subject,
       text,
     });
