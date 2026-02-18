@@ -28,9 +28,9 @@ body {
 
 .lang-switch {
   position: fixed;
-  top: 0.95rem;
-  right: 1rem;
-  z-index: 1400;
+  top: 5.2rem;
+  right: 1.5rem;
+  z-index: 950;
   display: inline-flex;
   border: 1px solid rgba(17, 183, 187, 0.35);
   border-radius: 9px;
@@ -1034,6 +1034,11 @@ footer {
 }
 
 @media (max-width: 768px) {
+  .lang-switch {
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 1200;
+  }
   nav { padding: 0.6rem 1.5rem; }
   .nav-links { display: none; }
   section { padding: 4rem 1.5rem; }
