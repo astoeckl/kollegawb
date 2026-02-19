@@ -72,6 +72,30 @@ function App() {
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
 
+    const nav = document.getElementById('nav');
+    const navToggle = document.getElementById('nav-toggle');
+    const navLinks = nav?.querySelectorAll('.nav-links a') ?? [];
+
+    const closeNav = () => {
+      if (!nav) return;
+      nav.classList.remove('nav-open');
+      if (navToggle) navToggle.setAttribute('aria-expanded', 'false');
+    };
+
+    const onNavToggle = () => {
+      if (!nav) return;
+      const isOpen = nav.classList.toggle('nav-open');
+      if (navToggle) navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    };
+
+    const onResize = () => {
+      if (window.innerWidth > 768) closeNav();
+    };
+
+    navToggle?.addEventListener('click', onNavToggle);
+    navLinks.forEach((link) => link.addEventListener('click', closeNav));
+    window.addEventListener('resize', onResize);
+
     const leadForm = document.getElementById('lead-form');
     const businessEmailInput = document.getElementById('business_email');
     const leadStatus = document.getElementById('lead-status');
@@ -206,6 +230,9 @@ function App() {
       revealObserver.disconnect();
       counterObserver.disconnect();
       window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onResize);
+      navToggle?.removeEventListener('click', onNavToggle);
+      navLinks.forEach((link) => link.removeEventListener('click', closeNav));
       businessEmailInput?.removeEventListener('input', onBusinessEmailInput);
       leadForm?.removeEventListener('input', clearLeadStatus);
       leadForm?.removeEventListener('submit', onLeadSubmit);
