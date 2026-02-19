@@ -1058,9 +1058,9 @@ footer {
 
 @media (max-width: 768px) {
   .lang-switch {
-    top: 0.75rem;
+    top: 4.6rem;
     right: 0.75rem;
-    z-index: 1200;
+    z-index: 950;
   }
   nav { padding: 0.6rem 1.5rem; }
   .nav-toggle { display: inline-flex; }
